@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>행찌 | 디지털 명함</title>
+  <!-- QR 코드 생성 라이브러리 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <style>
+    :root {
+      --color-teal: #134B5F;
+      --color-teal-dark: #0E3746;
+      --color-orange: #D9741F;
+      --color-dark: #1E2A30;
+      --color-gray: #6B7A80;
+      --color-line: #D5DDE0;
+      --color-bg-teal: #EEF3F5;
+      --color-bg-paper: #F5F7F8;
+      --color-white: #FFFFFF;
+      --color-success: #2E7A55;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+      word-break: keep-all;
+    }
+
+    body {
+      background-color: var(--color-bg-paper);
+      color: var(--color-dark);
+      display: flex;
+      justify-content: center;
+      padding: 16px;
+      min-height: 100vh;
+    }
+
+    .card-container {
+      width: 100%;
+      max-width: 380px;
+      background-color: var(--color-white);
+      border: 1px solid var(--color-line);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 상단 프로필 헤더 (짙은 청록) */
+    .profile-header {
+      background-color: var(--color-teal);
+      color: var(--color-white);
+      padding: 28px 20px 24px;
+      text-align: center;
+      position: relative;
+    }
+
+    .avatar-wrapper {
+      width: 110px;
+      height: 110px;
+      margin: 0 auto 14px;
+      border-radius: 50%;
+      border: 3px solid var(--color-white);
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      background-color: var(--color-bg-paper);
+    }
+
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+
+    .nickname {
+      font-size: 22px;
+      font-weight: bold;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .job-title {
+      font-size: 13px;
+      color: #D5E4E8;
+      font-weight: normal;
+    }
+
+    .tag-chips {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .tag-chip {
+      background-color: rgba(255, 255, 255, 0.15);
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      color: #FFFFFF;
+    }
+
+    /* 본문 영역 */
+    .card-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      background-color: var(--color-white);
+    }
+
+    /* 한 줄 소개 상자 */
+    .intro-box {
+      background-color: var(--color-bg-teal);
+      border-left: 4px solid var(--color-orange);
+      padding: 12px 14px;
+      border-radius: 0 6px 6px 0;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--color-dark);
+    }
+
+    /* 주요 업무 섹션 */
+    .section-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--color-teal);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-title::before {
+      content: "";
+      display: inline-block;
+      width: 3px;
+      height: 12px;
+      background-color: var(--color-orange);
+    }
+
+    .duty-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .duty-item {
+      font-size: 13px;
+      padding: 8px 10px;
+      background-color: var(--color-bg-paper);
+      border: 1px solid var(--color-line);
+      border-radius: 6px;
+      color: var(--color-dark);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .duty-badge {
+      font-size: 11px;
+      color: var(--color-teal);
+      font-weight: bold;
+    }
+
+    /* 액션 버튼 그룹 */
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn-action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: bold;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid var(--color-line);
+      background-color: var(--color-white);
+      color: var(--color-teal);
+      transition: all 0.2s;
+    }
+
+    .btn-action:hover {
+      background-color: var(--color-bg-teal);
+    }
+
+    .btn-primary-action {
+      grid-column: span 2;
+      background-color: var(--color-teal);
+      color: var(--color-white);
+      border: none;
+      padding: 12px;
+      font-size: 14px;
+    }
+
+    .btn-primary-action:hover {
+      background-color: var(--color-teal-dark);
+    }
+
+    /* 내가 만든 프로젝트 목록 */
+    .project-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .project-card {
+      padding: 12px;
+      background-color: var(--color-bg-paper);
+      border: 1px solid var(--color-line);
+      border-radius: 6px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: border-color 0.2s;
+    }
+
+    .project-card:hover {
+      border-color: var(--color-teal);
+    }
+
+    .project-info h4 {
+      font-size: 13px;
+      color: var(--color-teal);
+      margin-bottom: 2px;
+    }
+
+    .project-info p {
+      font-size: 11px;
+      color: var(--color-gray);
+    }
+
+    .project-arrow {
+      font-size: 14px;
+      color: var(--color-orange);
+      font-weight: bold;
+    }
+
+    /* QR 코드 영역 */
+    .qr-section {
+      background-color: var(--color-bg-paper);
+      border: 1px solid var(--color-line);
+      border-radius: 6px;
+      padding: 16px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #qrcode {
+      padding: 6px;
+      background: #FFFFFF;
+      border: 1px solid var(--color-line);
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    #qrcode img {
+      display: block;
+    }
+
+    .qr-desc {
+      font-size: 11px;
+      color: var(--color-gray);
+    }
+
+    /* 토스트 알림 */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--color-dark);
+      color: var(--color-white);
+      font-size: 12px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 100;
+    }
+
+    .toast.show {
+      opacity: 0.95;
+    }
+
+    /* 푸터 */
+    footer {
+      border-top: 1px solid var(--color-line);
+      padding: 16px 20px;
+      text-align: center;
+      background-color: var(--color-bg-paper);
+    }
+
+    .disclaimer {
+      font-size: 11px;
+      color: var(--color-gray);
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="card-container">
+    <!-- 1. 프로필 상단 헤더 -->
+    <header class="profile-header">
+      <div class="avatar-wrapper">
+        <img src="profile.png" alt="행찌 프로필 사진" class="avatar-img">
+      </div>
+      <h1 class="nickname">행찌 (Haengzzi)</h1>
+      <p class="job-title">영업관리팀 담당 · 보일러 서류 매니저</p>
+      
+      <div class="tag-chips">
+        <span class="tag-chip">계약·검사 서류</span>
+        <span class="tag-chip">견적서 발행</span>
+        <span class="tag-chip">엑셀 마스터</span>
+      </div>
+    </header>
+
+    <!-- 2. 본문 정보 영역 -->
+    <section class="card-body">
+      <!-- 한 줄 소개 -->
+      <div class="intro-box">
+        <strong>"일은 차근차근 실수 없이!"</strong><br>
+        견적서 검토부터 보일러 검사·인증 서류까지 똑똑하고 야무지게 챙깁니다.
+      </div>
+
+      <!-- 연락 및 저장 버튼 -->
+      <div>
+        <div class="section-title">빠른 연락 및 저장</div>
+        <div class="action-grid">
+          <button class="btn-action btn-primary-action" id="btnDownloadVcf" type="button">
+            연락처 저장하기 (.vcf)
+          </button>
+          <a href="tel:010-1234-5678" class="btn-action">
+            전화 걸기
+          </a>
+          <button class="btn-action" id="btnCopyEmail" type="button">
+            이메일 복사
+          </button>
+        </div>
+      </div>
+
+      <!-- 주요 업무 분야 -->
+      <div>
+        <div class="section-title">주요 업무</div>
+        <ul class="duty-list">
+          <li class="duty-item">
+            <span>계약서·보일러 검사 서류 관리</span>
+            <span class="duty-badge">서류</span>
+          </li>
+          <li class="duty-item">
+            <span>관류보일러·수처리설비 견적 산출</span>
+            <span class="duty-badge">견적</span>
+          </li>
+          <li class="duty-item">
+            <span>매출·실적 데이터 자동화 보고서</span>
+            <span class="duty-badge">데이터</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 내가 만든 웹 도구 -->
+      <div>
+        <div class="section-title">내가 만든 도구</div>
+        <div class="project-list">
+          <a href="lotto.html" class="project-card">
+            <div class="project-info">
+              <h4>로또 번호 추첨기</h4>
+              <p>암호학적 난수 추첨 & 점심 메뉴 뽑기</p>
+            </div>
+            <span class="project-arrow">→</span>
+          </a>
+          <a href="csv-tool.html" class="project-card">
+            <div class="project-info">
+              <h4>CSV → 엑셀 변환 도구</h4>
+              <p>4교시 데이터 정제 및 변환 웹앱</p>
+            </div>
+            <span class="project-arrow">→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- QR 코드 공유 -->
+      <div class="qr-section">
+        <div class="section-title" style="margin-bottom: 0;">디지털 명함 공유 QR</div>
+        <div id="qrcode"></div>
+        <p class="qr-desc">스마트폰 카메라로 스캔하여 명함 열기</p>
+      </div>
+    </section>
+
+    <!-- 3. 푸터 -->
+    <footer>
+      <p class="disclaimer">
+        교육 실습 페이지 · 연락처는 가상 정보입니다.<br>
+        2일차 AI 사무자동화 실습 과제
+      </p>
+    </footer>
+  </main>
+
+  <div id="toast" class="toast">복사되었습니다.</div>
+
+  <script>
+    // 1. vCard (.vcf) 다운로드 기능
+    document.getElementById('btnDownloadVcf').addEventListener('click', () => {
+      const vcardData = [
+        'BEGIN:VCARD',
+        'VERSION:3.0',
+        'FN:행찌',
+        'N:;행찌;;;',
+        'ORG:한국미우라공업(가상);영업관리팀',
+        'TITLE:영업관리팀 담당',
+        'TEL;TYPE=CELL:010-1234-5678',
+        'EMAIL;TYPE=WORK:haengzzi@example.com',
+        'NOTE:관류보일러 견적 및 검사 서류 관리 담당',
+        'END:VCARD'
+      ].join('\r\n');
+
+      const blob = new Blob([vcardData], { type: 'text/vcard;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', '행찌_디지털명함.vcf');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      showToast('연락처 파일(.vcf)이 다운로드되었습니다.');
+    });
+
+    // 2. 이메일 복사 기능
+    document.getElementById('btnCopyEmail').addEventListener('click', () => {
+      navigator.clipboard.writeText('haengzzi@example.com').then(() => {
+        showToast('이메일(haengzzi@example.com)이 복사되었습니다.');
+      }).catch(() => {
+        showToast('복사에 실패했습니다.');
+      });
+    });
+
+    // 3. 토스트 알림 표시
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+
+    // 4. QR 코드 자동 렌더링
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        const typeNumber = 0;
+        const errorCorrectionLevel = 'M';
+        const qr = qrcode(typeNumber, errorCorrectionLevel);
+        qr.addData(window.location.href);
+        qr.make();
+        document.getElementById('qrcode').innerHTML = qr.createImgTag(3, 8);
+      } catch (e) {
+        document.getElementById('qrcode').innerHTML = '<span style="font-size:11px;color:#888;">QR 로드 불가</span>';
+      }
+    });
+  </script>
+</body>
+</html>
